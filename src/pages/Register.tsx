@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import bcrypt from 'bcryptjs';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '../firebase';
 import { DEPARTMENTS } from '../data/departments';
-import { saveUser } from '../services/githubService';
 
 const Register: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [formData, setFormData] = useState({
+    email: '',
     name: '',
     phone: '',
     department: DEPARTMENTS[0],
@@ -22,22 +24,32 @@ const Register: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     setLoading(true);
 
     try {
-      // 1. 비밀번호 해싱 (Salt rounds: 10)
-      const hashedPassword = await bcrypt.hash(formData.password, 10);
-      
-      const userData = {
-        ...formData,
-        password: hashedPassword,
-        createdAt: new Date().toISOString(),
-      };
+      // 1. Firebase Auth 계정 생성
+      const userCredential = await createUserWithEmailAndPassword(
+        auth, 
+        formData.email, 
+        formData.password
+      );
+      const user = userCredential.user;
 
-      // 2. GitHub에 저장
-      await saveUser(userData);
+      // 2. Firestore에 추가 정보 저장
+      await setDoc(doc(db, "users", user.uid), {
+        email: formData.email,
+        name: formData.name,
+        phone: formData.phone,
+        department: formData.department,
+        studentId: formData.studentId,
+        role: 'member', // 기본 역할
+        createdAt: new Date().toISOString(),
+      });
       
       alert('회원가입이 완료되었습니다!');
       onBack();
     } catch (error: any) {
-      alert(`에러 발생: ${error.message}`);
+      let message = '에러가 발생했습니다.';
+      if (error.code === 'auth/email-already-in-use') message = '이미 사용 중인 이메일입니다.';
+      if (error.code === 'auth/weak-password') message = '비밀번호가 너무 취약합니다.';
+      alert(message + ` (${error.message})`);
     } finally {
       setLoading(false);
     }
@@ -48,6 +60,14 @@ const Register: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       <div className="register-card">
         <h2>Club Rapid 가입하기</h2>
         <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>이메일</label>
+            <input name="email" type="email" required onChange={handleChange} placeholder="example@email.com" />
+          </div>
+          <div className="form-group">
+            <label>비밀번호</label>
+            <input name="password" type="password" required onChange={handleChange} placeholder="6자 이상 입력" />
+          </div>
           <div className="form-group">
             <label>이름</label>
             <input name="name" required onChange={handleChange} placeholder="홍길동" />
@@ -65,10 +85,6 @@ const Register: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           <div className="form-group">
             <label>학번</label>
             <input name="studentId" required onChange={handleChange} placeholder="202612345" />
-          </div>
-          <div className="form-group">
-            <label>비밀번호</label>
-            <input name="password" type="password" required onChange={handleChange} />
           </div>
           
           <div className="register-btns">
