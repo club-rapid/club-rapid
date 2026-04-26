@@ -3,14 +3,15 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
 
+// 환경 변수 문제 가능성을 차단하기 위해 직접 하드코딩 (QA 단계)
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+  apiKey: "AIzaSyAAt94Pd-MqCFVWrg3-Rej69QjXY3mYEwQ",
+  authDomain: "club-rapid-mjc.firebaseapp.com",
+  projectId: "club-rapid-mjc",
+  storageBucket: "club-rapid-mjc.firebasestorage.app",
+  messagingSenderId: "336428178712",
+  appId: "1:336428178712:web:94f180cfa0d25f2aa8926d",
+  measurementId: "G-ZWKFGCLYR7"
 };
 
 const app = initializeApp(firebaseConfig);
