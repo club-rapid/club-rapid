@@ -141,6 +141,79 @@
   color: #64748b;
 }
 
+/* Register Page */
+.register-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #0f172a;
+  padding: 2rem;
+}
+
+.register-card {
+  background: #1e293b;
+  padding: 2.5rem;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.register-card h2 {
+  margin-bottom: 2rem;
+  text-align: center;
+  color: #38bdf8;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: white;
+  font-size: 1rem;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #38bdf8;
+}
+
+.register-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.register-btns .btn-primary {
+  width: 100%;
+}
+
+.register-btns .btn-secondary {
+  width: 100%;
+  border: none;
+  color: #94a3b8;
+}
+
+.register-btns .btn-secondary:hover {
+  color: #38bdf8;
+}
+
 /* Original code preserved below: */
 /* #root {
   max-width: 1280px;
