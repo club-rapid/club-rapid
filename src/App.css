@@ -49,6 +49,7 @@ h1, h2, h3 {
   align-items: center;
   position: fixed;
   top: 0;
+  left: 0; /* PC 여백 버그 수정 */
   width: 100%;
   z-index: 9999;
   padding: 0 22px;

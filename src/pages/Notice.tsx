@@ -12,6 +12,7 @@ const NOTICES = [
     title: "실시간 채팅 가이드라인",
     content: "팀원들 간의 예의를 지켜주세요. 비속어 사용 시 제재될 수 있습니다.",
     tag: "Guide",
+    link: "guidelines" // 특정 링크 타겟 추가
   },
   {
     id: 3,
@@ -21,7 +22,7 @@ const NOTICES = [
   }
 ];
 
-const Notice: React.FC = () => {
+const Notice: React.FC<{ onNavigate: (page: string) => void }> = ({ onNavigate }) => {
   return (
     <div className="page-content">
       <header className="hero-section">
@@ -37,7 +38,12 @@ const Notice: React.FC = () => {
             </span>
             <h2>{notice.title}</h2>
             <p>{notice.content}</p>
-            <button className="btn-secondary">더 알아보기 ›</button>
+            <button 
+              className="btn-secondary" 
+              onClick={() => notice.link ? onNavigate(notice.link) : null}
+            >
+              더 알아보기 ›
+            </button>
           </section>
         ))}
       </div>

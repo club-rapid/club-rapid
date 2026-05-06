@@ -8,17 +8,18 @@ import Login from './pages/Login'
 import UserList from './pages/UserList'
 import Chat from './pages/Chat'
 import Notice from './pages/Notice'
+import Guidelines from './pages/Guidelines'
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
-  const [currentPage, setCurrentPage] = useState<'landing' | 'register' | 'login' | 'notice' | 'users' | 'chat'>('landing');
+  const [currentPage, setCurrentPage] = useState<'landing' | 'register' | 'login' | 'notice' | 'users' | 'chat' | 'guidelines'>('landing');
   const [targetUser, setTargetUser] = useState<{uid: string, name: string} | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser && currentPage === 'landing') {
-        setCurrentPage('notice'); // 로그인 후 메인은 공지사항
+        setCurrentPage('notice');
       }
     });
     return () => unsubscribe();
@@ -38,9 +39,11 @@ function App() {
   const renderPage = () => {
     if (currentPage === 'register') return <Register onBack={() => setCurrentPage('landing')} />;
     if (currentPage === 'login') return <Login onBack={() => setCurrentPage('landing')} onSuccess={() => setCurrentPage('notice')} />;
+    if (currentPage === 'guidelines') return <Guidelines onBack={() => setCurrentPage('notice')} />;
+    
     if (user) {
-      if (currentPage === 'notice') return <Notice />;
-      if (currentPage === 'users') return <UserList onChat={startChat} onLogout={handleLogout} />;
+      if (currentPage === 'notice') return <Notice onNavigate={(page) => setCurrentPage(page as any)} />;
+      if (currentPage === 'users') return <UserList onChat={startChat} />;
       if (currentPage === 'chat' && targetUser) return <Chat targetUser={targetUser} onBack={() => setCurrentPage('users')} />;
     }
 

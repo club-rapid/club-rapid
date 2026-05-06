@@ -10,7 +10,7 @@ interface UserData {
   unreadCount?: number;
 }
 
-const UserList: React.FC<{ onChat: (uid: string, name: string) => void, onLogout: () => void }> = ({ onChat, onLogout }) => {
+const UserList: React.FC<{ onChat: (uid: string, name: string) => void }> = ({ onChat }) => {
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const myUid = auth.currentUser?.uid;
