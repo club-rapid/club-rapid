@@ -36,7 +36,16 @@ body {
 h1, h2, h3 {
   font-family: "SF Pro Display", "Inter", sans-serif;
   font-weight: 600;
-  letter-spacing: -0.01em; /* Tight tracking */
+  letter-spacing: -0.01em;
+  color: var(--color-ink); /* 진한 Near-Black 적용 */
+}
+
+.hero-display {
+  font-size: 56px;
+  line-height: 1.07;
+  letter-spacing: -0.025em; /* 애플 특유의 꽉 찬 자간 */
+  margin-bottom: 12px;
+  color: #000000; /* 메인 제목은 완전한 검정색으로 강조 */
 }
 
 /* Global Nav */

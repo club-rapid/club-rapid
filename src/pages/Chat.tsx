@@ -19,7 +19,7 @@ interface Message {
   createdAt: Timestamp;
 }
 
-const Chat: React.FC<{ targetUser: {uid: string, name: string}, onBack: () => void }> = ({ targetUser, onBack }) => {
+const Chat: React.FC<{ targetUser: {uid: string, name: string, githubUrl?: string}, onBack: () => void }> = ({ targetUser, onBack }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -75,6 +75,15 @@ const Chat: React.FC<{ targetUser: {uid: string, name: string}, onBack: () => vo
     }
   };
 
+  const openGithub = () => {
+    if (targetUser.githubUrl) {
+      const url = targetUser.githubUrl.startsWith('http') 
+        ? targetUser.githubUrl 
+        : `https://${targetUser.githubUrl}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   return (
     <div className="page-content" style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#ffffff' }}>
       {/* Chat Header */}
@@ -92,7 +101,18 @@ const Chat: React.FC<{ targetUser: {uid: string, name: string}, onBack: () => vo
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <button onClick={onBack} style={{ background: 'none', border: 'none', color: '#0066cc', fontSize: '17px', cursor: 'pointer' }}>‹ Back</button>
-          <h3 style={{ fontSize: '17px', fontWeight: 600 }}>{targetUser.name}</h3>
+          <h3 
+            onClick={openGithub}
+            style={{ 
+              fontSize: '17px', 
+              fontWeight: 600, 
+              cursor: targetUser.githubUrl ? 'pointer' : 'default',
+              color: targetUser.githubUrl ? '#0066cc' : '#1d1d1f',
+              textDecoration: targetUser.githubUrl ? 'underline' : 'none'
+            }}
+          >
+            {targetUser.name}{targetUser.githubUrl ? ' (GitHub)' : ''}
+          </h3>
         </div>
       </header>
 

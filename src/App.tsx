@@ -13,7 +13,7 @@ import Guidelines from './pages/Guidelines'
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState<'landing' | 'register' | 'login' | 'notice' | 'users' | 'chat' | 'guidelines'>('landing');
-  const [targetUser, setTargetUser] = useState<{uid: string, name: string} | null>(null);
+  const [targetUser, setTargetUser] = useState<{uid: string, name: string, githubUrl?: string} | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -30,12 +30,11 @@ function App() {
     setCurrentPage('landing');
   };
 
-  const startChat = (uid: string, name: string) => {
-    setTargetUser({ uid, name });
+  const startChat = (target: {uid: string, name: string, githubUrl?: string}) => {
+    setTargetUser(target);
     setCurrentPage('chat');
   };
 
-  // Rendering logic
   const renderPage = () => {
     if (currentPage === 'register') return <Register onBack={() => setCurrentPage('landing')} />;
     if (currentPage === 'login') return <Login onBack={() => setCurrentPage('landing')} onSuccess={() => setCurrentPage('notice')} />;

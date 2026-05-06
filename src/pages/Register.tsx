@@ -11,6 +11,7 @@ const Register: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     phone: '',
     department: DEPARTMENTS[0],
     status: '재학',
+    githubUrl: '', // GitHub 주소 추가
     password: '',
   });
   const [loading, setLoading] = useState(false);
@@ -41,6 +42,7 @@ const Register: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         phone: formData.phone,
         department: formData.department,
         status: formData.status,
+        githubUrl: formData.githubUrl, // Firestore 저장
         role: 'member',
         createdAt: new Date().toISOString(),
       });
@@ -69,6 +71,9 @@ const Register: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           </div>
           <div className="form-group">
             <input name="phone" required onChange={handleChange} placeholder="연락처" />
+          </div>
+          <div className="form-group">
+            <input name="githubUrl" onChange={handleChange} placeholder="GitHub URL (https://github.com/...)" />
           </div>
           <div className="form-group">
             <select name="department" onChange={handleChange}>

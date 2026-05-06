@@ -7,10 +7,11 @@ interface UserData {
   name: string;
   department: string;
   status: string;
+  githubUrl?: string; // 추가
   unreadCount?: number;
 }
 
-const UserList: React.FC<{ onChat: (uid: string, name: string) => void }> = ({ onChat }) => {
+const UserList: React.FC<{ onChat: (user: UserData) => void }> = ({ onChat }) => {
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const myUid = auth.currentUser?.uid;
@@ -78,7 +79,7 @@ const UserList: React.FC<{ onChat: (uid: string, name: string) => void }> = ({ o
             {users.map(user => (
               <div 
                 key={user.uid} 
-                onClick={() => onChat(user.uid, user.name)}
+                onClick={() => onChat(user)}
                 style={{ 
                   backgroundColor: '#ffffff',
                   padding: '24px',
