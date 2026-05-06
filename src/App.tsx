@@ -7,17 +7,18 @@ import Register from './pages/Register'
 import Login from './pages/Login'
 import UserList from './pages/UserList'
 import Chat from './pages/Chat'
+import Notice from './pages/Notice'
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
-  const [currentPage, setCurrentPage] = useState<'landing' | 'register' | 'login' | 'users' | 'chat'>('landing');
+  const [currentPage, setCurrentPage] = useState<'landing' | 'register' | 'login' | 'notice' | 'users' | 'chat'>('landing');
   const [targetUser, setTargetUser] = useState<{uid: string, name: string} | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser && currentPage === 'landing') {
-        setCurrentPage('users');
+        setCurrentPage('notice'); // 로그인 후 메인은 공지사항
       }
     });
     return () => unsubscribe();
@@ -34,42 +35,67 @@ function App() {
   };
 
   // Rendering logic
-  if (currentPage === 'register') return <Register onBack={() => setCurrentPage('landing')} />;
-  if (currentPage === 'login') return <Login onBack={() => setCurrentPage('landing')} onSuccess={() => setCurrentPage('users')} />;
-  if (user && currentPage === 'users') return <UserList onChat={startChat} onLogout={handleLogout} />;
-  if (user && currentPage === 'chat' && targetUser) return <Chat targetUser={targetUser} onBack={() => setCurrentPage('users')} />;
+  const renderPage = () => {
+    if (currentPage === 'register') return <Register onBack={() => setCurrentPage('landing')} />;
+    if (currentPage === 'login') return <Login onBack={() => setCurrentPage('landing')} onSuccess={() => setCurrentPage('notice')} />;
+    if (user) {
+      if (currentPage === 'notice') return <Notice />;
+      if (currentPage === 'users') return <UserList onChat={startChat} onLogout={handleLogout} />;
+      if (currentPage === 'chat' && targetUser) return <Chat targetUser={targetUser} onBack={() => setCurrentPage('users')} />;
+    }
+
+    return (
+      <div className="page-content">
+        <header className="hero-section">
+          <h1 className="hero-display">Club Rapid.</h1>
+          <p className="hero-sub">Accelerate your passion. Fast. Light. Beautiful.</p>
+          {!user && (
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
+              <button className="btn-primary" onClick={() => setCurrentPage('register')}>가입하기</button>
+              <button className="btn-secondary" onClick={() => setCurrentPage('login')}>로그인 ›</button>
+            </div>
+          )}
+        </header>
+
+        <section className="tile-grid">
+          <div className="product-tile" style={{ backgroundColor: '#fafafc' }}>
+            <h2>Photography.</h2>
+            <p>UI recedes so the product can speak.</p>
+          </div>
+          <div className="product-tile" style={{ backgroundColor: '#1d1d1f', color: '#ffffff' }}>
+            <h2 style={{ color: '#ffffff' }}>Performance.</h2>
+            <p style={{ color: '#ffffff' }}>Built with React and Firebase.</p>
+          </div>
+        </section>
+      </div>
+    );
+  };
 
   return (
-    <div className="landing-container">
+    <div className="app-container">
       <nav className="navbar">
-        <div className="logo">Club Rapid</div>
-        <ul className="nav-links">
-          {user ? (
-            <>
-              <li><button className="btn-login" onClick={() => setCurrentPage('users')}>Members</button></li>
-              <li><button className="btn-secondary" onClick={handleLogout}>Logout</button></li>
-            </>
-          ) : (
-            <>
-              <li><button className="btn-login" onClick={() => setCurrentPage('login')}>Login</button></li>
-              <li><button className="btn-secondary" onClick={() => setCurrentPage('register')}>Join</button></li>
-            </>
-          )}
-        </ul>
+        <div className="nav-container">
+          <div className="logo" onClick={() => setCurrentPage('landing')}>Club Rapid</div>
+          <ul className="nav-links">
+            {user ? (
+              <>
+                <li><span className="nav-link-item" onClick={() => setCurrentPage('notice')}>Notice</span></li>
+                <li><span className="nav-link-item" onClick={() => setCurrentPage('users')}>Members</span></li>
+                <li><span className="nav-link-item" onClick={handleLogout}>Logout</span></li>
+              </>
+            ) : (
+              <>
+                <li><span className="nav-link-item" onClick={() => setCurrentPage('login')}>Login</span></li>
+                <li><span className="nav-link-item" onClick={() => setCurrentPage('register')}>Join</span></li>
+              </>
+            )}
+          </ul>
+        </div>
       </nav>
 
-      <header className="hero-section">
-        <h1>Accelerate Your Passion with <span className="highlight">Club Rapid</span></h1>
-        <p>실시간 소켓 대화가 가능한 동아리 커뮤니티입니다.</p>
-        {!user && (
-          <div className="hero-btns">
-            <button className="btn-primary" onClick={() => setCurrentPage('register')}>가입 신청하기</button>
-            <button className="btn-secondary" onClick={() => setCurrentPage('login')}>로그인</button>
-          </div>
-        )}
-      </header>
+      {renderPage()}
 
-      <footer className="footer">
+      <footer className="footer" style={{ backgroundColor: '#f5f5f7', padding: '64px 20px', textAlign: 'center', fontSize: '12px', color: '#86868b' }}>
         <p>&copy; 2026 Club Rapid. All rights reserved.</p>
       </footer>
     </div>

@@ -4,7 +4,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 
 const Login: React.FC<{ onBack: () => void, onSuccess: () => void }> = ({ onBack, onSuccess }) => {
-  const [studentId, setStudentId] = useState(''); // 이메일 대신 학번
+  const [studentId, setStudentId] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -13,53 +13,46 @@ const Login: React.FC<{ onBack: () => void, onSuccess: () => void }> = ({ onBack
     setLoading(true);
 
     try {
-      // 1. 학번을 가상 이메일로 변환
       const virtualEmail = `${studentId}@club-rapid.com`;
-
-      // 2. 로그인 인증
       const userCredential = await signInWithEmailAndPassword(auth, virtualEmail, password);
       const user = userCredential.user;
 
-      // 3. IP 주소 가져오기
-      const ipRes = await fetch('https://api.ipify.org?format=json');
-      const ipData = await ipRes.json();
-      const ipAddress = ipData.ip;
+      try {
+        const ipRes = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipRes.json();
+        await updateDoc(doc(db, "users", user.uid), {
+          lastLoginIp: ipData.ip,
+          lastLoginAt: new Date().toISOString(),
+        });
+      } catch (ipError) {
+        await updateDoc(doc(db, "users", user.uid), {
+          lastLoginAt: new Date().toISOString(),
+        });
+      }
 
-      // 4. Firestore 업데이트
-      await updateDoc(doc(db, "users", user.uid), {
-        lastLoginIp: ipAddress,
-        lastLoginAt: new Date().toISOString(),
-      });
-
-      alert('로그인 성공! 환영합니다.');
       onSuccess();
     } catch (error: any) {
-      let message = '로그인 실패';
-      if (error.code === 'auth/user-not-found') message = '등록되지 않은 학번입니다.';
-      if (error.code === 'auth/wrong-password') message = '비밀번호가 틀렸습니다.';
-      alert(`${message} (${error.message})`);
+      alert(`로그인 실패: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="register-container">
-      <div className="register-card">
-        <h2>Club Rapid 로그인</h2>
+    <div className="auth-container">
+      <div className="auth-card">
+        <h2>Sign in.</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>학번</label>
             <input 
               type="text" 
               required 
               value={studentId} 
               onChange={(e) => setStudentId(e.target.value)} 
-              placeholder="학번을 입력하세요"
+              placeholder="학번"
             />
           </div>
           <div className="form-group">
-            <label>비밀번호</label>
             <input 
               type="password" 
               required 
@@ -69,11 +62,13 @@ const Login: React.FC<{ onBack: () => void, onSuccess: () => void }> = ({ onBack
             />
           </div>
           
-          <div className="register-btns">
-            <button type="submit" className="btn-primary" disabled={loading}>
-              {loading ? '로그인 중...' : '로그인'}
+          <div style={{ marginTop: '40px' }}>
+            <button type="submit" className="btn-primary" style={{ width: '100%', padding: '12px', fontSize: '17px' }} disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign in'}
             </button>
-            <button type="button" className="btn-secondary" onClick={onBack}>취소</button>
+            <button type="button" className="btn-secondary" style={{ marginTop: '20px', display: 'block', width: '100%' }} onClick={onBack}>
+              Cancel
+            </button>
           </div>
         </form>
       </div>

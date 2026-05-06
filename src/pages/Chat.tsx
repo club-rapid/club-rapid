@@ -5,7 +5,9 @@ import {
   query, 
   orderBy, 
   onSnapshot, 
-  Timestamp 
+  Timestamp,
+  doc,
+  updateDoc
 } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 
@@ -13,6 +15,7 @@ interface Message {
   id: string;
   text: string;
   senderId: string;
+  readBy: string[];
   createdAt: Timestamp;
 }
 
@@ -21,14 +24,12 @@ const Chat: React.FC<{ targetUser: {uid: string, name: string}, onBack: () => vo
   const [newMessage, setNewMessage] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // 대화방 ID 생성 (두 UID를 정렬하여 조합)
   const myUid = auth.currentUser?.uid || '';
   const roomId = [myUid, targetUser.uid].sort().join('_');
 
   useEffect(() => {
     if (!myUid) return;
 
-    // 실시간 리스너 설정 (소켓 역할)
     const q = query(
       collection(db, "chats", roomId, "messages"),
       orderBy("createdAt", "asc")
@@ -36,12 +37,19 @@ const Chat: React.FC<{ targetUser: {uid: string, name: string}, onBack: () => vo
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const msgs: Message[] = [];
-      snapshot.forEach((doc) => {
-        msgs.push({ id: doc.id, ...doc.data() } as Message);
+      snapshot.forEach((snapshotDoc) => {
+        const data = snapshotDoc.data();
+        msgs.push({ id: snapshotDoc.id, ...data } as Message);
+
+        if (data.senderId !== myUid && (!data.readBy || !data.readBy.includes(myUid))) {
+          const msgRef = doc(db, "chats", roomId, "messages", snapshotDoc.id);
+          updateDoc(msgRef, {
+            readBy: [...(data.readBy || []), myUid]
+          });
+        }
       });
       setMessages(msgs);
       
-      // 새 메시지 오면 아래로 스크롤
       setTimeout(() => {
         scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
@@ -58,6 +66,7 @@ const Chat: React.FC<{ targetUser: {uid: string, name: string}, onBack: () => vo
       await addDoc(collection(db, "chats", roomId, "messages"), {
         text: newMessage,
         senderId: myUid,
+        readBy: [myUid],
         createdAt: Timestamp.now(),
       });
       setNewMessage('');
@@ -67,26 +76,43 @@ const Chat: React.FC<{ targetUser: {uid: string, name: string}, onBack: () => vo
   };
 
   return (
-    <div className="register-container">
-      <div className="register-card" style={{ maxWidth: '600px', height: '80vh', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-          <h3>{targetUser.name} 님과 대화</h3>
-          <button className="btn-secondary" onClick={onBack}>닫기</button>
+    <div className="page-content" style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#ffffff' }}>
+      {/* Chat Header */}
+      <header style={{ 
+        padding: '12px 20px', 
+        borderBottom: '1px solid #e0e0e0', 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(20px)',
+        position: 'sticky',
+        top: '44px',
+        zIndex: 10
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button onClick={onBack} style={{ background: 'none', border: 'none', color: '#0066cc', fontSize: '17px', cursor: 'pointer' }}>‹ Back</button>
+          <h3 style={{ fontSize: '17px', fontWeight: 600 }}>{targetUser.name}</h3>
         </div>
+      </header>
 
-        <div className="chat-messages" style={{ flex: 1, overflowY: 'auto', background: '#0f172a', padding: '10px', borderRadius: '8px', marginBottom: '10px' }}>
+      {/* Messages Area */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           {messages.map((msg) => (
             <div key={msg.id} style={{ 
               display: 'flex', 
               justifyContent: msg.senderId === myUid ? 'flex-end' : 'flex-start',
-              marginBottom: '10px'
+              marginBottom: '8px'
             }}>
               <div style={{ 
-                background: msg.senderId === myUid ? '#38bdf8' : '#334155',
-                color: msg.senderId === myUid ? '#0f172a' : 'white',
-                padding: '8px 12px',
-                borderRadius: '12px',
-                maxWidth: '70%',
+                backgroundColor: msg.senderId === myUid ? '#0066cc' : '#f5f5f7',
+                color: msg.senderId === myUid ? '#ffffff' : '#1d1d1f',
+                padding: '10px 16px',
+                borderRadius: '18px',
+                maxWidth: '75%',
+                fontSize: '17px',
+                lineHeight: '1.4',
                 textAlign: 'left'
               }}>
                 {msg.text}
@@ -95,15 +121,25 @@ const Chat: React.FC<{ targetUser: {uid: string, name: string}, onBack: () => vo
           ))}
           <div ref={scrollRef}></div>
         </div>
+      </div>
 
-        <form onSubmit={handleSend} style={{ display: 'flex', gap: '10px' }}>
+      {/* Input Area */}
+      <div style={{ padding: '20px', backgroundColor: '#ffffff', borderTop: '1px solid #e0e0e0' }}>
+        <form onSubmit={handleSend} style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', gap: '12px' }}>
           <input 
-            style={{ flex: 1 }} 
+            style={{ 
+              flex: 1, 
+              padding: '12px 20px', 
+              borderRadius: '980px', 
+              border: '1px solid #e0e0e0', 
+              backgroundColor: '#f5f5f7',
+              fontSize: '17px'
+            }} 
             value={newMessage} 
             onChange={(e) => setNewMessage(e.target.value)} 
-            placeholder="메시지를 입력하세요..."
+            placeholder="iMessage"
           />
-          <button type="submit" className="btn-primary">전송</button>
+          <button type="submit" className="btn-primary" style={{ padding: '0 20px' }}>Send</button>
         </form>
       </div>
     </div>
