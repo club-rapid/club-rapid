@@ -10,8 +10,9 @@ const Register: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     name: '',
     phone: '',
     department: DEPARTMENTS[0],
+    grade: '1학년', // 학년 추가
     status: '재학',
-    githubUrl: '', // GitHub 주소 추가
+    githubUrl: '',
     password: '',
   });
   const [loading, setLoading] = useState(false);
@@ -41,8 +42,9 @@ const Register: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         name: formData.name,
         phone: formData.phone,
         department: formData.department,
+        grade: formData.grade, // Firestore 저장
         status: formData.status,
-        githubUrl: formData.githubUrl, // Firestore 저장
+        githubUrl: formData.githubUrl,
         role: 'member',
         createdAt: new Date().toISOString(),
       });
@@ -73,15 +75,21 @@ const Register: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             <input name="phone" required onChange={handleChange} placeholder="연락처" />
           </div>
           <div className="form-group">
-            <input name="githubUrl" onChange={handleChange} placeholder="GitHub URL (https://github.com/...)" />
+            <input name="githubUrl" onChange={handleChange} placeholder="GitHub URL" />
           </div>
           <div className="form-group">
             <select name="department" onChange={handleChange}>
               {DEPARTMENTS.map(dept => <option key={dept} value={dept}>{dept}</option>)}
             </select>
           </div>
-          <div className="form-group">
-            <select name="status" onChange={handleChange}>
+          <div className="form-group" style={{ display: 'flex', gap: '10px' }}>
+            <select name="grade" onChange={handleChange} style={{ flex: 1 }}>
+              <option value="1학년">1학년</option>
+              <option value="2학년">2학년</option>
+              <option value="3학년">3학년</option>
+              <option value="4학년">4학년</option>
+            </select>
+            <select name="status" onChange={handleChange} style={{ flex: 1 }}>
               <option value="재학">재학</option>
               <option value="휴학">휴학</option>
               <option value="졸업">졸업</option>
@@ -90,7 +98,7 @@ const Register: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           
           <div style={{ marginTop: '40px' }}>
             <button type="submit" className="btn-primary" style={{ width: '100%', padding: '12px', fontSize: '17px' }} disabled={loading}>
-              {loading ? 'Creating...' : 'Create Account'}
+              Create Account
             </button>
             <button type="button" className="btn-secondary" style={{ marginTop: '20px', display: 'block', width: '100%' }} onClick={onBack}>
               Cancel

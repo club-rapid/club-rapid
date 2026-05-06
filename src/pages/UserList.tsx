@@ -6,8 +6,9 @@ interface UserData {
   uid: string;
   name: string;
   department: string;
+  grade?: string;
   status: string;
-  githubUrl?: string; // 추가
+  githubUrl?: string;
   unreadCount?: number;
 }
 
@@ -64,6 +65,14 @@ const UserList: React.FC<{ onChat: (user: UserData) => void }> = ({ onChat }) =>
     return () => unsubscribes.forEach(unsub => unsub());
   }, [users.length, myUid]);
 
+  const openGithub = (e: React.MouseEvent, url?: string) => {
+    e.stopPropagation(); // 카드 클릭(채팅 이동) 방지
+    if (url) {
+      const fullUrl = url.startsWith('http') ? url : `https://${url}`;
+      window.open(fullUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   return (
     <div className="page-content" style={{ backgroundColor: '#f5f5f7', minHeight: '100vh' }}>
       <header className="hero-section" style={{ backgroundColor: 'transparent' }}>
@@ -75,7 +84,7 @@ const UserList: React.FC<{ onChat: (user: UserData) => void }> = ({ onChat }) =>
         {loading ? (
           <p style={{ textAlign: 'center' }}>Loading members...</p>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
             {users.map(user => (
               <div 
                 key={user.uid} 
@@ -87,23 +96,41 @@ const UserList: React.FC<{ onChat: (user: UserData) => void }> = ({ onChat }) =>
                   border: '1px solid #e0e0e0',
                   cursor: 'pointer',
                   transition: 'transform 0.3s ease',
-                  position: 'relative'
+                  position: 'relative',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between'
                 }}
                 className="user-card"
               >
-                <div style={{ marginBottom: '16px' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#0066cc' }}>{user.status}</span>
-                  <h3 style={{ fontSize: '21px', margin: '4px 0', color: '#1d1d1f' }}>{user.name}</h3>
-                  <p style={{ fontSize: '14px', color: '#86868b' }}>{user.department}</p>
+                <div style={{ marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: '#0066cc', padding: '2px 8px', backgroundColor: '#f5f5f7', borderRadius: '4px' }}>{user.status}</span>
+                    {user.grade && <span style={{ fontSize: '11px', fontWeight: 600, color: '#86868b' }}>{user.grade}</span>}
+                  </div>
+                  <h3 style={{ fontSize: '19px', margin: 0, color: '#1d1d1f', display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                    {user.name}
+                    <span style={{ fontSize: '14px', fontWeight: 400, color: '#86868b' }}>{user.department}</span>
+                  </h3>
                 </div>
 
                 {user.unreadCount !== undefined && user.unreadCount > 0 && (
-                  <span className="unread-badge" style={{ position: 'absolute', top: '24px', right: '24px', marginLeft: 0 }}>
+                  <span className="unread-badge" style={{ position: 'absolute', top: '24px', right: '24px' }}>
                     {user.unreadCount}
                   </span>
                 )}
                 
-                <div style={{ color: '#0066cc', fontSize: '14px', fontWeight: 400 }}>Message ›</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '16px', borderTop: '1px solid #f5f5f7' }}>
+                  <div style={{ color: '#0066cc', fontSize: '14px', fontWeight: 400 }}>Message ›</div>
+                  {user.githubUrl && (
+                    <div 
+                      onClick={(e) => openGithub(e, user.githubUrl)}
+                      style={{ color: '#0066cc', fontSize: '14px', fontWeight: 400, display: 'flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      GitHub ›
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
